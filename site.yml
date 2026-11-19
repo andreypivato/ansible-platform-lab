@@ -5,6 +5,7 @@
 
   roles:
     - webserver
+    - firewall
 
 - name: Provisionar infraestrutura do Database Server
   hosts: dbservers
@@ -12,3 +13,4 @@
 
   roles:
     - database
+    - firewall

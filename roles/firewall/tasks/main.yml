@@ -1,0 +1,45 @@
+---
+- name: Garantir que o UFW esteja instalado
+  apt:
+    name: ufw
+    state: present
+    update_cache: yes
+
+- name: Permitir SSH apenas a partir do control-node
+  ufw:
+    rule: allow
+    proto: tcp
+    port: "22"
+    src: "{{ ssh_allowed_from_ip }}"
+
+- name: Permitir trafego HTTP nos webservers
+  ufw:
+    rule: allow
+    proto: tcp
+    port: "80"
+  when: "'webservers' in group_names"
+
+- name: Permitir PostgreSQL apenas do webservers para o dbservers
+  ufw:
+    rule: allow
+    proto: tcp
+    port: "5432"
+    src: "{{ hostvars[item]['ansible_host'] }}"
+  loop: "{{ groups['webservers'] | default([]) }}"
+  when:
+    - "'dbservers' in group_names"
+    - "hostvars[item]['ansible_host'] is defined"
+
+- name: Definir politica padrao de entrada como deny
+  ufw:
+    default: deny
+    direction: incoming
+
+- name: Definir politica padrao de saida como allow
+  ufw:
+    default: allow
+    direction: outgoing
+
+- name: Habilitar o UFW
+  ufw:
+    state: enabled

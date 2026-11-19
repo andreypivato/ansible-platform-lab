@@ -5,8 +5,15 @@ Laboratório prático de **Infrastructure as Code (IaC)** e **Configuration Mana
 ## Arquitetura e Topologia
 
 - **Control Node (`control-node`)**: Executa os playbooks Ansible, gerencia o inventário e orquestra os hosts via SSH (chave `Ed25519`).
-- **Web Server (`web-server-01`)**: Grupo `[webservers]` — recebe a role `webserver` (`open-vm-tools`, `nginx` e deploy de página HTML dinâmica via template Jinja2 usando `ansible_facts`).
-- **Database Server (`db-server-01`)**: Grupo `[dbservers]` — recebe a role `database` (`postgresql`, `postgresql-contrib`, serviço habilitado no boot e criação idempotente de usuário e banco de dados da aplicação).
+- **Web Server (`web-server-01`)**: Grupo `[webservers]` — recebe as roles `webserver` (`open-vm-tools`, `nginx` e página HTML dinâmica via template Jinja2) e `firewall` (`ufw`).
+- **Database Server (`db-server-01`)**: Grupo `[dbservers]` — recebe as roles `database` (`postgresql`, `postgresql-contrib`, serviço ativo e criação idempotente de usuário e banco de dados) e `firewall` (`ufw`).
+
+## Hardening e Segmentação com UFW (`roles/firewall`)
+
+- **SSH (`22/tcp`)**: Liberado **apenas** a partir do IP do `control-node`.
+- **HTTP (`80/tcp`)**: Liberado nos hosts do grupo `[webservers]`.
+- **PostgreSQL (`5432/tcp`)**: Liberado no grupo `[dbservers]` **apenas** a partir do IP do `[webservers]`.
+- **Política padrão**: `deny` para entrada (`incoming`) e `allow` para saída (`outgoing`).
 
 ## Estrutura do Projeto
 
@@ -15,13 +22,20 @@ Laboratório prático de **Infrastructure as Code (IaC)** e **Configuration Mana
 ├── ansible.cfg
 ├── inventory.ini
 ├── site.yml
+├── .gitignore
+├── README.md
 └── roles/
     ├── webserver/
     │   ├── tasks/
     │   │   └── main.yml
     │   └── templates/
     │       └── index.html.j2
-    └── database/
+    ├── database/
+    │   ├── tasks/
+    │   │   └── main.yml
+    │   └── vars/
+    │       └── main.yml
+    └── firewall/
         ├── tasks/
         │   └── main.yml
         └── vars/
