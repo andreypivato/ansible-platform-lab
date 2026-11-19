@@ -1,0 +1,32 @@
+---
+- name: Atualizar cache do apt e instalar PostgreSQL
+  apt:
+    update_cache: yes
+    name:
+      - postgresql
+      - postgresql-contrib
+    state: present
+
+- name: Garantir que o servico PostgreSQL esteja rodando e habilitado no boot
+  service:
+    name: postgresql
+    state: started
+    enabled: yes
+
+- name: Criar usuario de aplicacao no PostgreSQL se nao existir
+  shell: |
+    runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_roles WHERE rolname='{{ db_user }}'" | grep -q 1 || \
+    runuser -u postgres -- psql -c "CREATE USER {{ db_user }} WITH PASSWORD '{{ db_password }}';"
+  args:
+    executable: /bin/bash
+  register: create_db_user
+  changed_when: "'CREATE ROLE' in create_db_user.stdout"
+
+- name: Criar banco de dados da aplicacao se nao existir
+  shell: |
+    runuser -u postgres -- psql -tAc "SELECT 1 FROM pg_database WHERE datname='{{ db_name }}'" | grep -q 1 || \
+    runuser -u postgres -- psql -c "CREATE DATABASE {{ db_name }} OWNER {{ db_user }};"
+  args:
+    executable: /bin/bash
+  register: create_db_result
+  changed_when: "'CREATE DATABASE' in create_db_result.stdout"

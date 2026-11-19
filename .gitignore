@@ -1,0 +1,14 @@
+# Arquivos temporarios e de retry do Ansible
+*.retry
+__pycache__/
+*.pyc
+
+# Logs e arquivos locais
+*.log
+.DS_Store
+
+# Segredos / Vault / Chaves locais (caso venha a usar)
+vault.yml
+*.vault
+*.pem
+*.key

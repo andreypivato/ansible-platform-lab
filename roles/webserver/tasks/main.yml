@@ -1,0 +1,22 @@
+---
+- name: Atualizar cache do apt e instalar pacotes base
+  apt:
+    update_cache: yes
+    name:
+      - open-vm-tools
+      - nginx
+    state: present
+
+- name: Garantir que o servico Nginx esteja rodando e habilitado no boot
+  service:
+    name: nginx
+    state: started
+    enabled: yes
+
+- name: Deploy da pagina customizada via template Jinja2
+  template:
+    src: index.html.j2
+    dest: /var/www/html/index.html
+    owner: www-data
+    group: www-data
+    mode: '0644'

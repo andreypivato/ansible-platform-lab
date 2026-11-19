@@ -1,0 +1,14 @@
+---
+- name: Provisionar infraestrutura do Web Server
+  hosts: webservers
+  become: yes
+
+  roles:
+    - webserver
+
+- name: Provisionar infraestrutura do Database Server
+  hosts: dbservers
+  become: yes
+
+  roles:
+    - database
